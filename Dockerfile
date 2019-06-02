@@ -7,13 +7,19 @@ RUN apt-get update && \
 COPY . /opt/waflz
 
 RUN cd /opt/waflz && \
-     pip install -r requirements.txt && \
-     ./build.sh
+    pip install -r requirements.txt && \
+    ./build.sh
 
-EXPOSE 12345
+RUN cd /opt && \
+    git clone https://github.com/SpiderLabs/owasp-modsecurity-crs && \
+    mkdir -p /opt/owasp-modsecurity-crs/version/v3.2-dev/policy && \
+    python /opt/waflz/tests/blackbox/ruleset//convert.py
+
+EXPOSE 80
 
 CMD ["/opt/waflz/build/util/waflz_server/waflz_server", \
-  "--ruleset-dir=/opt/waflz/tests/data/waf/ruleset", \
+  "--ruleset-dir=/opt/", \
   "--geoip-db=/opt/waflz/tests/data/waf/db/GeoLite2-City.mmdb", \
   "-geoip-isp-db=/opt/waflz/tests/data/waf/db/GeoLite2-ASN.mmdb", \
-  "--profile=/opt/waflz/tests/blackbox/ruleset/template.waf.prof.json"]
+  "--profile=/opt/waflz/tests/blackbox/ruleset/OWASP_3.2.prof.json", \
+  "--port=80"]
